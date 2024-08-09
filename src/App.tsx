@@ -14,18 +14,24 @@ const App: React.FC = () => {
       try {
         // Fetch user info and tokens from Azure Easy Auth
         const response = await axios.get('/.auth/me');
-        const data = response.data;
-        setUserInfo(data[0]);
+        if (response.status === 200) {
+          const data = response.data;
+          if (data && data[0]) {
+            setUserInfo(data[0]);
 
-        // Extract and set the tokens
-        const access_token = data[0]?.access_token;
-        setAccessToken(access_token);
+            // Extract and set the tokens
+            const access_token = data[0]?.access_token;
+            setAccessToken(access_token);
 
-        const id_token = data[0]?.id_token;
-        setIdToken(id_token);
+            const id_token = data[0]?.id_token;
+            setIdToken(id_token);
 
-        const refresh_token = data[0]?.refresh_token;
-        setRefreshToken(refresh_token);
+            const refresh_token = data[0]?.refresh_token;
+            setRefreshToken(refresh_token);
+          }
+        } else {
+          console.error('Failed to fetch user info: ', response.statusText);
+        }
       } catch (error) {
         console.error('Error fetching user info', error);
       }
@@ -36,9 +42,9 @@ const App: React.FC = () => {
 
   // Function to call the FastAPI backend using the access token
   const callBackend = async () => {
-    if (accessToken && backendUrl) {  // Ensure backendUrl is defined
+    if (accessToken && backendUrl) {
       try {
-        const response = await axios.get(`${backendUrl}`, {
+        const response = await axios.get(backendUrl, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
