@@ -9,7 +9,6 @@ const App: React.FC = () => {
   const [backendResponse, setBackendResponse] = useState<string | null>(null);
   const backendUrl = process.env.REACT_APP_BACKEND_URL;
 
-
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
@@ -37,7 +36,7 @@ const App: React.FC = () => {
 
   // Function to call the FastAPI backend using the access token
   const callBackend = async () => {
-    if (accessToken) {
+    if (accessToken && backendUrl) {  // Ensure backendUrl is defined
       try {
         const response = await axios.get(`${backendUrl}`, {
           headers: {
@@ -50,9 +49,9 @@ const App: React.FC = () => {
         setBackendResponse('Error calling backend');
       }
     } else {
-      console.log('No access token available');
+      console.log('No access token or backend URL available');
     }
-  };  
+  };
 
   return (
     <div>
