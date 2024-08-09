@@ -1,27 +1,28 @@
 import React, { useState, useEffect } from 'react';
+import axios from 'axios';
 
 const App: React.FC = () => {
   const [userInfo, setUserInfo] = useState<any>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
   const [idToken, setIdToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
+  const [backendResponse, setBackendResponse] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
       try {
-        const response = await fetch('/.auth/me');
-        const data = await response.json();
+        // Fetch user info and tokens from Azure Easy Auth
+        const response = await axios.get('/.auth/me');
+        const data = response.data;
         setUserInfo(data[0]);
 
-        // Access token
+        // Extract and set the tokens
         const access_token = data[0]?.access_token;
         setAccessToken(access_token);
 
-        // ID token
         const id_token = data[0]?.id_token;
         setIdToken(id_token);
 
-        // Refresh token (may not always be available)
         const refresh_token = data[0]?.refresh_token;
         setRefreshToken(refresh_token);
       } catch (error) {
@@ -31,6 +32,25 @@ const App: React.FC = () => {
 
     fetchUserInfo();
   }, []);
+
+  // Function to call the FastAPI backend using the access token
+  const callBackend = async () => {
+    if (accessToken) {
+      try {
+        const response = await axios.get('https://your-backend-url/api/data', {
+          headers: {
+            Authorization: `Bearer ${accessToken}`,
+          },
+        });
+        setBackendResponse(response.data.message);
+      } catch (error) {
+        console.error('Error calling backend:', error);
+        setBackendResponse('Error calling backend');
+      }
+    } else {
+      console.log('No access token available');
+    }
+  };
 
   return (
     <div>
@@ -43,6 +63,13 @@ const App: React.FC = () => {
           <p><strong>Access Token:</strong> {accessToken || 'No access token available'}</p>
           <p><strong>ID Token:</strong> {idToken || 'No ID token available'}</p>
           <p><strong>Refresh Token:</strong> {refreshToken || 'No refresh token available'}</p>
+        </div>
+      )}
+      <button onClick={callBackend}>Call Backend</button>
+      {backendResponse && (
+        <div>
+          <h2>Backend Response</h2>
+          <p>{backendResponse}</p>
         </div>
       )}
     </div>
