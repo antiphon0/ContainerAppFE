@@ -3,6 +3,8 @@ import React, { useState, useEffect } from 'react';
 const App: React.FC = () => {
   const [userInfo, setUserInfo] = useState<any>(null);
   const [accessToken, setAccessToken] = useState<string | null>(null);
+  const [idToken, setIdToken] = useState<string | null>(null);
+  const [refreshToken, setRefreshToken] = useState<string | null>(null);
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -12,8 +14,16 @@ const App: React.FC = () => {
         setUserInfo(data[0]);
 
         // Access token
-        const token = data[0]?.access_token;
-        setAccessToken(token);
+        const access_token = data[0]?.access_token;
+        setAccessToken(access_token);
+
+        // ID token
+        const id_token = data[0]?.id_token;
+        setIdToken(id_token);
+
+        // Refresh token (may not always be available)
+        const refresh_token = data[0]?.refresh_token;
+        setRefreshToken(refresh_token);
       } catch (error) {
         console.error('Error fetching user info', error);
       }
@@ -22,29 +32,19 @@ const App: React.FC = () => {
     fetchUserInfo();
   }, []);
 
-  const handleApiCall = async () => {
-    if (accessToken) {
-      try {
-        const response = await fetch('/api/data', {
-          method: 'GET',
-          headers: {
-            Authorization: `Bearer ${accessToken}`,
-          },
-        });
-        const result = await response.json();
-        console.log(result);
-      } catch (error) {
-        console.error('Error calling API', error);
-      }
-    } else {
-      console.log('No access token available');
-    }
-  };
-
   return (
     <div>
-      <h1>Welcome, {userInfo?.user_claims?.find((claim: any) => claim.typ === 'name')?.val || 'Guest'}!</h1>
-      <button onClick={handleApiCall}>Call API</button>
+      <h1>Authentication Tokens</h1>
+      {userInfo && (
+        <div>
+          <h2>User Information</h2>
+          <p><strong>Name:</strong> {userInfo.user_claims.find((claim: any) => claim.typ === 'name')?.val}</p>
+          <h2>Tokens</h2>
+          <p><strong>Access Token:</strong> {accessToken || 'No access token available'}</p>
+          <p><strong>ID Token:</strong> {idToken || 'No ID token available'}</p>
+          <p><strong>Refresh Token:</strong> {refreshToken || 'No refresh token available'}</p>
+        </div>
+      )}
     </div>
   );
 };
