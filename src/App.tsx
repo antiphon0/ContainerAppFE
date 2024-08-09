@@ -7,6 +7,8 @@ const App: React.FC = () => {
   const [idToken, setIdToken] = useState<string | null>(null);
   const [refreshToken, setRefreshToken] = useState<string | null>(null);
   const [backendResponse, setBackendResponse] = useState<string | null>(null);
+  const backendUrl = process.env.REACT_APP_BACKEND_URL;
+
 
   useEffect(() => {
     const fetchUserInfo = async () => {
@@ -37,7 +39,7 @@ const App: React.FC = () => {
   const callBackend = async () => {
     if (accessToken) {
       try {
-        const response = await axios.get('https://your-backend-url/api/data', {
+        const response = await axios.get(`${backendUrl}`, {
           headers: {
             Authorization: `Bearer ${accessToken}`,
           },
@@ -50,7 +52,7 @@ const App: React.FC = () => {
     } else {
       console.log('No access token available');
     }
-  };
+  };  
 
   return (
     <div>
